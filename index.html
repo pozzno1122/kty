@@ -75,25 +75,24 @@
     </div>
 
     <script>
-        // ព័ត៌មាន Credentials របស់អ្នក
-        const merchant_id = "ec480530";
-        const api_key = "FDCB5F572548AF9C2C08FEE4949D8C5A04842620";
+    const merchant_id = "ec480530";
+    const api_key = "FDCB5F572548AF9C2C08FEE4949D8C5A04842620";
 
-        document.getElementById('payway-btn').addEventListener('click', function () {
+    document.getElementById('payway-btn').addEventListener('click', function () {
+        try {
             let req_time = Date.now().toString();
             let tran_id = "INV-" + req_time;
             let amount = "10.00";
             
-            // បម្លែងទំនិញជា Base64
             let itemsObj = [{name: "Test Product", quantity: "1", price: "10.00"}];
             let items = btoa(JSON.stringify(itemsObj));
 
-            // បង្កើត Hash string តាមស្តង់ដារ PayWay
             let hash_string = req_time + merchant_id + tran_id + amount + items;
             
-            // គណនា HMAC SHA512 ជាមួយ CryptoJS
             let hash = CryptoJS.HmacSHA512(hash_string, api_key);
             let hashInBase64 = CryptoJS.enc.Base64.stringify(hash);
+
+            console.log("Generated Hash:", hashInBase64); // មើលក្នុង Console
 
             let checkoutData = {
                 merchant_id: merchant_id,
@@ -107,10 +106,18 @@
                 return_url: ""
             };
 
-            // បើកផ្ទាំង Checkout Modal របស់ ABA PayWay
-            Payway.checkout(checkoutData);
-        });
-    </script>
+            // ឆ្ងៀតឆ្គង Payway object
+            if (typeof Payway !== 'undefined') {
+                Payway.checkout(checkoutData);
+            } else {
+                alert("Payway script មិនទាន់បានផ្ទុកជោគជ័យទេ!");
+            }
+        } catch (error) {
+            alert("Error: " + error.message);
+        }
+    });
+</script>
+
 
 </body>
 </html>
