@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABA PayWay Sandbox Checkout</title>
+    
+    <!-- ផ្ទុក binarary/library សម្រាប់គណនា Hash ក្នុង JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    
+    <!-- ផ្ទុក ABA PayWay Checkout Script (Sandbox Mode) -->
+    <script src="https://checkout-sandbox.payway.com.kh/plugins/checkout2-edge.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .checkout-card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+        p {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 16px;
+        }
+        .price {
+            color: #008080;
+            font-weight: bold;
+        }
+        .pay-btn {
+            background-color: #008080;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s ease;
+        }
+        .pay-btn:hover {
+            background-color: #006666;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="checkout-card">
+        <h2>ទូទាត់ប្រាក់ហាងរបស់អ្នក</h2>
+        <p>ទំនិញ: Test Product<br>ទឹកប្រាក់សរុប: <span class="price">$10.00</span></p>
+        
+        <button id="payway-btn" class="pay-btn">បង់ប្រាក់តាមរយៈ ABA KHQR</button>
+    </div>
+
+    <script>
+        // ព័ត៌មាន Credentials របស់អ្នក
+        const merchant_id = "ec480530";
+        const api_key = "FDCB5F572548AF9C2C08FEE4949D8C5A04842620";
+
+        document.getElementById('payway-btn').addEventListener('click', function () {
+            let req_time = Date.now().toString();
+            let tran_id = "INV-" + req_time;
+            let amount = "10.00";
+            
+            // បម្លែងទំនិញជា Base64
+            let itemsObj = [{name: "Test Product", quantity: "1", price: "10.00"}];
+            let items = btoa(JSON.stringify(itemsObj));
+
+            // បង្កើត Hash string តាមស្តង់ដារ PayWay
+            let hash_string = req_time + merchant_id + tran_id + amount + items;
+            
+            // គណនា HMAC SHA512 ជាមួយ CryptoJS
+            let hash = CryptoJS.HmacSHA512(hash_string, api_key);
+            let hashInBase64 = CryptoJS.enc.Base64.stringify(hash);
+
+            let checkoutData = {
+                merchant_id: merchant_id,
+                req_time: req_time,
+                tran_id: tran_id,
+                amount: amount,
+                items: items,
+                hash: hashInBase64,
+                view_type: "checkout",
+                continue_success_url: "",
+                return_url: ""
+            };
+
+            // បើកផ្ទាំង Checkout Modal របស់ ABA PayWay
+            Payway.checkout(checkoutData);
+        });
+    </script>
+
+</body>
+</html>
